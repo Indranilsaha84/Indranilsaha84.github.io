@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        /* General Styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+        }
+
+        /* Calculator Container */
+        .calculator {
+            width: 100%;
+            max-width: 380px;
+            background: #2c3e50; /* Dark blue-gray */
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            color: #ecf0f1; /* Light gray text */
+        }
+
+        /* Display Screen */
+        .display {
+            background-color: #1c2833;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: right;
+            margin-bottom: 20px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .expression {
+            font-size: 1.5em;
+            color: #7f8c8d; /* Muted gray */
+            min-height: 30px;
+            margin-bottom: 5px;
+        }
+
+        .result {
+            font-size: 2.8em;
+            font-weight: bold;
+            min-height: 50px;
+        }
+
+        /* Button Grid */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 20px 0;
+            font-size: 1.4em;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            background-color: #34495e; /* Lighter blue-gray */
+            color: #ecf0f1;
+        }
+
+        .btn:hover {
+            background-color: #46627f;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Special Button Styles */
+        .btn.operator {
+            background-color: #e67e22; /* Orange */
+            color: #fff;
+        }
+        
+        .btn.operator:hover {
+            background-color: #d35400;
+        }
+
+        .btn.function {
+            background-color: #536d7a; /* Muted blue */
+            color: #ecf0f1;
+        }
+
+        .btn.function:hover {
+            background-color: #445963;
+        }
+
+        .btn.clear {
+            background-color: #c0392b; /* Red */
+            color: #fff;
+        }
+
+        .btn.clear:hover {
+             background-color: #a93226;
+        }
+        
+        .btn.equals {
+            grid-column: span 2;
+            background-color: #27ae60; /* Green */
+            color: #fff;
+        }
+        .btn.equals:hover {
+            background-color: #229954;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <div class="display">
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
+        </div>
+
+        <div class="buttons">
+            <!-- Functions -->
+            <button class="btn function" onclick="appendInput('sin(')">sin</button>
+            <button class="btn function" onclick="appendInput('cos(')">cos</button>
+            <button class="btn function" onclick="appendInput('tan(')">tan</button>
+            <button class="btn function" onclick="appendInput('Math.PI')">π</button>
+            <button class="btn clear" onclick="backspace()">C</button>
+            
+            <button class="btn function" onclick="appendInput('Math.log10(')">log</button>
+            <button class="btn function" onclick="appendInput('Math.log(')">ln</button>
+            <button class="btn function" onclick="appendInput('(')">(</button>
+            <button class="btn function" onclick="appendInput(')')">)</button>
+            <button class="btn clear" onclick="clearDisplay()">AC</button>
+            
+            <button class="btn function" onclick="appendInput('**')">xʸ</button>
+            <button class="btn function" onclick="square()">x²</button> <!-- NEW BUTTON -->
+            <button class="btn function" onclick="appendInput('Math.sqrt(')">√</button>
+            <button class="btn function" onclick="appendInput('!')">x!</button>
+            <button class="btn operator" onclick="appendInput('/')">÷</button>
+
+            <!-- Numbers & Main Operators -->
+            <button class="btn" onclick="appendInput('7')">7</button>
+            <button class="btn" onclick="appendInput('8')">8</button>
+            <button class="btn" onclick="appendInput('9')">9</button>
+            <button class="btn operator" onclick="appendInput('*')">×</button>
+            <button class="btn operator" onclick="appendInput('-')">−</button>
+            
+            <button class="btn" onclick="appendInput('4')">4</button>
+            <button class="btn" onclick="appendInput('5')">5</button>
+            <button class="btn" onclick="appendInput('6')">6</button>
+            <button class="btn operator" onclick="appendInput('+')">+</button>
+
+            <!-- Last Row -->
+            <button class="btn" onclick="appendInput('1')">1</button>
+            <button class="btn" onclick="appendInput('2')">2</button>
+            <button class="btn" onclick="appendInput('3')">3</button>
+            <button class="btn" onclick="appendInput('.')">.</button>
+
+            <button class="btn" onclick="appendInput('0')">0</button>
+            <button class="btn equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        const expressionDisplay = document.getElementById('expression');
+        const resultDisplay = document.getElementById('result');
+
+        let currentInput = '0';
+        
+        // Function to handle factorial calculation
+        function factorial(n) {
+            if (n < 0) return NaN; // Factorial is not defined for negative numbers
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = n; i > 1; i--) {
+                result *= i;
+            }
+            return result;
+        }
+
+        function updateDisplay() {
+            if (currentInput === '' || currentInput === undefined) {
+                 resultDisplay.innerText = '0';
+                 expressionDisplay.innerText = '';
+            } else {
+                 resultDisplay.innerText = currentInput;
+            }
+        }
+        
+        function appendInput(value) {
+            if (currentInput === '0' && value !== '.') {
+                currentInput = '';
+            } else if (currentInput === 'Error') {
+                 currentInput = '';
+            }
+
+            // Special handling for factorial to find the number it applies to
+            if (value === '!') {
+                // Find the last number in the expression
+                const matches = currentInput.match(/(\d+(\.\d+)?)$/);
+                if (matches) {
+                    const numberStr = matches[0];
+                    const num = parseFloat(numberStr);
+                    const factResult = factorial(num);
+                    // Replace the number with its factorial result
+                    currentInput = currentInput.slice(0, -numberStr.length) + factResult;
+                }
+            } else {
+                 currentInput += value;
+            }
+           
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '0';
+            expressionDisplay.innerText = '';
+            updateDisplay();
+        }
+
+        function backspace() {
+            if (currentInput.length > 1 && currentInput !== 'Error') {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            expressionDisplay.innerText = '';
+            updateDisplay();
+        }
+
+        /**
+         * NEW FUNCTION for calculating the square of the current number.
+         */
+        function square() {
+            try {
+                const currentNumber = parseFloat(resultDisplay.innerText);
+                if (isNaN(currentNumber)) {
+                     throw new Error("Invalid Number for Square");
+                }
+                // Update the expression display to show what operation was done
+                expressionDisplay.innerText = `sqr(${currentNumber})`;
+                // Calculate and update the current input
+                currentInput = String(Math.pow(currentNumber, 2));
+                updateDisplay();
+
+            } catch (error) {
+                expressionDisplay.innerText = '';
+                currentInput = 'Error';
+                updateDisplay();
+            }
+        }
+
+
+        function calculate() {
+            try {
+                let evalExpression = currentInput
+                                        .replace(/sin/g, 'Math.sin')
+                                        .replace(/cos/g, 'Math.cos')
+                                        .replace(/tan/g, 'Math.tan');
+                
+                // Safe evaluation using a Function constructor
+                const result = new Function('return ' + evalExpression)();
+
+                if (isNaN(result) || !isFinite(result)) {
+                    throw new Error("Invalid Calculation");
+                }
+
+                expressionDisplay.innerText = currentInput + ' =';
+                currentInput = String(result);
+                updateDisplay();
+
+            } catch (error) {
+                expressionDisplay.innerText = currentInput + ' =';
+                currentInput = 'Error';
+                updateDisplay();
+            }
+        }
+        
+        // Initial call to set the display
+        updateDisplay();
+    </script>
+</body>
+</html>
