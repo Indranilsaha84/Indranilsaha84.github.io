@@ -2,7 +2,9 @@
 # [ Click Me ](https://indranilsaha84.github.io/application) 
 ### Here you can get your leave of abseans application by filling your info
 # [ Click Me ](https://indranilsaha84.github.io/sealf%201)
-### here you can get the student info filling from if you fill this they will get you a student info . But the filler should be have an SISter who is a student 
+### here you can get the student info filling from if you fill this they will get you a student info . But the filler should be have an SISter who is a student
+# [ click Me ](Indranilsaha84.github.io/sintific calculator.html)
+### Here you can access a sintific calculator 
 # [ Click me ](https://config.office.com/deploymentsettings)
 ### Here you can download your Microsoft office latest verson!
 # [ Click me ](https://softzar.com/adobe-photoshop-cc-2022-free-download/)
