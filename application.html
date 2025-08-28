@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave of Absence Application Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #0056b3;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #applicationOutput {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap; /* Preserves formatting */
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.8;
+        }
+        .print-button {
+             background-color: #28a745;
+        }
+        .print-button:hover {
+            background-color: #1e7e34;
+        }
+        /* Styles for printing */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .no-print, .no-print * {
+                display: none !important;
+            }
+            #applicationContainer, #applicationContainer * {
+                visibility: visible;
+            }
+            #applicationContainer {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container no-print">
+        <h1>Leave Application Generator</h1>
+        <p>Fill in the details below to automatically generate your leave application for the school principal.</p>
+
+        <form id="leaveForm">
+            <div class="form-group">
+                <label for="studentName">Your Full Name:</label>
+                <input type="text" id="studentName" required>
+            </div>
+            
+            <!-- MODIFIED SECTION: Removed the section selector -->
+            <div class="form-group">
+                <label for="classGrade">Your Class:</label>
+                <select id="classGrade" required>
+                    <option value="" disabled selected>Select Class</option>
+                    <option value="Nursery">Nursery</option>
+                    <option value="LKG">LKG</option>
+                    <option value="UKG">UKG</option>
+                    <option value="1st">1st</option>
+                    <option value="2nd">2nd</option>
+                    <option value="3rd">3rd</option>
+                    <option value="4th">4th</option>
+                    <option value="5th">5th</option>
+                    <option value="6th">6th</option>
+                    <option value="7th">7th</option>
+                    <option value="8th">8th</option>
+                    <option value="9th">9th</option>
+                    <option value="10th">10th</option>
+                    <option value="11th">11th</option>
+                    <option value="12th">12th</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="rollNumber">Your Roll Number:</label>
+                <input type="text" id="rollNumber" required>
+            </div>
+            <div class="form-group">
+                <label for="schoolName">School Name:</label>
+                <input type="text" id="schoolName" required>
+            </div>
+            <div class="form-group">
+                <label for="schoolAddress">School Address:</label>
+                <input type="text" id="schoolAddress" required>
+            </div>
+            <div class="form-group">
+                <label for="startDate">Leave Start Date:</label>
+                <input type="date" id="startDate" required>
+            </div>
+            <div class="form-group">
+                <label for="endDate">Leave End Date:</label>
+                <input type="date" id="endDate" required>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason for Absence:</label>
+                <textarea id="reason" rows="4" placeholder="e.g., due to a family wedding out of town." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="parentName">Parent/Guardian Full Name:</label>
+                <input type="text" id="parentName" required>
+            </div>
+            <button type="button" onclick="generateApplication()">Generate Application</button>
+        </form>
+    </div>
+
+    <!-- This is where the generated application will appear -->
+    <div id="applicationContainer" class="container" style="display:none;">
+        <h2>Generated Application</h2>
+        <pre id="applicationOutput"></pre>
+        <button class="print-button no-print" onclick="window.print()">Print Application</button>
+    </div>
+
+    <script>
+        function generateApplication() {
+            // Get values from the form
+            const studentName = document.getElementById('studentName').value;
+            const className = document.getElementById('classGrade').value; // <-- Simplified
+            const rollNumber = document.getElementById('rollNumber').value;
+            const schoolName = document.getElementById('schoolName').value;
+            const schoolAddress = document.getElementById('schoolAddress').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reason = document.getElementById('reason').value;
+            const parentName = document.getElementById('parentName').value;
+            
+            // Basic validation - Removed section check
+            if (!studentName || !className || !schoolName || !startDate || !endDate || !reason || !parentName) {
+                alert("Please fill out all the required fields.");
+                return;
+            }
+
+            const today = new Date().toLocaleDateString('en-GB', {
+                day: '2-digit', month: '2-digit', year: 'numeric'
+            }).replace(/\//g, '-');
+
+            const formattedStartDate = new Date(startDate).toLocaleDateString('en-US', {
+                 year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            const formattedEndDate = new Date(endDate).toLocaleDateString('en-US', {
+                 year: 'numeric', month: 'long', day: 'numeric' 
+            });
+
+            // Create the application text using a template literal
+            const applicationText = `
+${studentName}
+Class ${className}
+Roll Number: ${rollNumber}
+Date: ${today}
+
+To,
+The Principal,
+${schoolName}
+${schoolAddress}
+
+Subject: Application for Leave of Absence
+
+Respected Sir/Madam,
+
+I am writing to request a leave of absence from school from ${formattedStartDate} to ${formattedEndDate}. My name is ${studentName}, a student of Class ${className}.
+
+The reason for my absence is ${reason}.
+
+I will ensure that I complete any pending classwork and catch up on missed lessons as soon as I return.
+
+I kindly request you to grant me leave for the above-mentioned dates. Thank you for your consideration.
+
+Yours obediently,
+
+
+____________________
+(${studentName})
+
+
+____________________
+(Signature of Parent/Guardian)
+Name: ${parentName}
+`;
+
+            // Display the generated application
+            const outputElement = document.getElementById('applicationOutput');
+            const outputContainer = document.getElementById('applicationContainer');
+            outputElement.textContent = applicationText;
+            outputContainer.style.display = 'block';
+
+            // Scroll to the generated application
+            outputContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+
+</body>
+</html>
