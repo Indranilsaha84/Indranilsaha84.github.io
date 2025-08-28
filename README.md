@@ -5,8 +5,6 @@
 ### here you can get the student info filling from if you fill this they will get you a student info . But the filler should be have an Sister who is a student
 # [ Click Me ](https://indranilsaha84.github.io/sintific%20calculator.html)
 ### Here you can access a sintific calculator 
-    (Indranilsaha84.github.io/syntafic calculator.py)
-## Copy this link and paste to the search engine to get an python copy of the calculator
 # [ Click Me ](https://config.office.com/deploymentsettings)
 ### Here you can download your Microsoft office latest verson!
 # [ Click Me ](https://softzar.com/adobe-photoshop-cc-2022-free-download/)
