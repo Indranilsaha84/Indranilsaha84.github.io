@@ -5,7 +5,7 @@
 ### here you can get the student info filling from if you fill this they will get you a student info . But the filler should be have an Sister who is a student
 # [ Click Me ](https://indranilsaha84.github.io/sintific%20calculator.html)
 ### Here you can access a sintific calculator 
-# [ Click ME](Indranilsaha84.github.io/clock.HTML)
+# [ Click ME](https://indranilsaha84.github.io/clock.HTML)
 ### here you can see an mordan clock 
 # [ Click Me ](https://config.office.com/deploymentsettings)
 ### Here you can download your Microsoft office latest verson!
