@@ -7,7 +7,7 @@
 ### That does same but it for those student who has an brother who is an student
 # [ Click Me ](https://indranilsaha84.github.io/sintific%20calculator.html)
 ### Here you can access a sintific calculator
-# [ Click Me ](Indranilsaha84.github.io/profasional flip clock with date.HTML)
+# [ Click Me ](https://indranilsaha84.github.io/profasional%20flip%20clock%20with%20date.HTML)
 ### Here is the profesonal flip clock with Date
 # [ Click Me ](http://indranilsaha84.github.io/profasional%20flip%20clock.HTML)
 ### Here is the profasional flip clock 
