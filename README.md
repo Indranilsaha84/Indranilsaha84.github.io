@@ -2,15 +2,19 @@
 # [ Click Me ](https://indranilsaha84.github.io/application) 
 ### Here you can get your leave of abseans application by filling your info
 # [ Click Me ](https://indranilsaha84.github.io/sealf%201)
-### here you can get the student info filling from if you fill this they will get you a student info . But the filler should be have an Sister who is a student
+### Here you can get the student info filling from if you fill this they will get you a student info . But the filler should be have an Sister who is a student
 # [click Me ](https://indranilsaha84.github.io/sealf%202.html)
-### that does same but it for those student who has an brother who is an student
+### That does same but it for those student who has an brother who is an student
 # [ Click Me ](https://indranilsaha84.github.io/sintific%20calculator.html)
 ### Here you can access a sintific calculator
+# [ Click Me ](Indranilsaha84.github.io/profasional flip clock with date.HTML)
+### Here is the profesonal flip clock with Date
 # [ Click Me ](http://indranilsaha84.github.io/profasional%20flip%20clock.HTML)
-### here is the profasional flip clock 
+### Here is the profasional flip clock 
+# [ Click Me ](http://indranilsaha84.github.io/mordan%20flip%20clock%20with%20Date.HTML)
+### Here is the mordan clock with Date
 # [ Click ME](https://indranilsaha84.github.io/clock.HTML)
-### here you can see an mordan flip clock 
+### Here you can see an mordan flip clock 
 # [ Click Me ](https://config.office.com/deploymentsettings)
 ### Here you can download your Microsoft office latest verson!
 # [ Click Me ](https://softzar.com/adobe-photoshop-cc-2022-free-download/)
