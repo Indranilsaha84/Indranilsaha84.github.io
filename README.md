@@ -3,7 +3,7 @@
 ### Here you can get your leave of abseans application by filling your info
 # [ Click Me ](https://indranilsaha84.github.io/sealf%201)
 ### Here you can get the student info filling from if you fill this they will get you a student info . But the filler should be have an Sister who is a student
-# [click Me ](https://indranilsaha84.github.io/sealf%202.html)
+# [ Click Me ](https://indranilsaha84.github.io/sealf%202.html)
 ### That does same but it for those student who has an brother who is an student
 # [ Click Me ](https://indranilsaha84.github.io/sintific%20calculator.html)
 ### Here you can access a sintific calculator
