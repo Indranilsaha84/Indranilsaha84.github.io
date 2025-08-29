@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Clock</title>
+    <style>
+        @font-face {
+            font-family: 'Lavishly Yours';
+            src: url('LavishlyYours.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Lavishly Yours', cursive;
+        }
+        .flip-clock {
+            display: flex;
+            gap: 80px;
+            backdrop-filter: blur(16px) saturate(180%);
+            background: rgba(255,255,255,0.10);
+            border-radius: 64px;
+            box-shadow: 0 16px 64px #0008;
+            padding: 80px 120px;
+        }
+        .flip-unit {
+            background: rgba(255,255,255,0.22);
+            border-radius: 40px;
+            box-shadow: 0 12px 48px #0006;
+            color: #fff;
+            font-family: 'Lavishly Yours', cursive;
+            font-size: 12em;
+            width: 340px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid rgba(255,255,255,0.18);
+        }
+        .label {
+            font-size: 0.28em;
+            color: #e0e0e0;
+            margin-top: 40px;
+            letter-spacing: 2px;
+            font-family: 'Lavishly Yours', cursive;
+        }
+        .flip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(180deg, #fff2 0%, #fff0 100%);
+            border-radius: 40px 40px 0 0;
+            transform-origin: bottom;
+            transform: rotateX(0deg);
+            transition: transform 0.5s cubic-bezier(.4,2,.3,1);
+            z-index: 2;
+            box-shadow: 0 8px 32px #0004;
+        }
+        .flip.down {
+            transform: rotateX(-90deg);
+        }
+        .flip-unit span {
+            text-shadow: 0 8px 32px #0008;
+            font-family: 'Lavishly Yours', cursive;
+        }
+        @media (max-width: 900px) {
+            .flip-clock {
+                gap: 16px;
+                padding: 16px 8px;
+            }
+            .flip-unit {
+                font-size: 2em;
+                width: 60px;
+                height: 70px;
+            }
+            .label {
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flip-clock">
+        <div class="flip-unit" id="hours">
+            <div class="flip" id="flip-hours"></div>
+            <span id="hours-value">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="minutes">
+            <div class="flip" id="flip-minutes"></div>
+            <span id="minutes-value">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="seconds">
+            <div class="flip" id="flip-seconds"></div>
+            <span id="seconds-value">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="ampm" style="width:110px;font-size:3.5em;">
+            <span id="ampm-value">AM</span>
+            <span class="label">AM/PM</span>
+        </div>
+    </div>
+    <script>
+        function pad(n) {
+            return n < 10 ? '0' + n : n;
+        }
+        function flip(unit, value) {
+            const flipEl = document.getElementById('flip-' + unit);
+            const valueEl = document.getElementById(unit + '-value');
+            flipEl.classList.remove('down');
+            setTimeout(() => {
+                flipEl.classList.add('down');
+                valueEl.textContent = pad(value);
+            }, 80);
+            setTimeout(() => {
+                flipEl.classList.remove('down');
+            }, 500);
+        }
+        let last = {h: null, m: null, s: null, ampm: null};
+        function updateClock() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            let h12 = h % 12;
+            h12 = h12 === 0 ? 12 : h12;
+            if (h12 !== last.h) flip('hours', h12);
+            if (m !== last.m) flip('minutes', m);
+            if (s !== last.s) flip('seconds', s);
+            if (ampm !== last.ampm) {
+                document.getElementById('ampm-value').textContent = ampm;
+            }
+            last = {h: h12, m, s, ampm};
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
