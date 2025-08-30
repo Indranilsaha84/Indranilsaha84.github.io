@@ -15,6 +15,8 @@
 ### Here is the mordan clock with Date
 # [ Click ME](https://indranilsaha84.github.io/clock.HTML)
 ### Here you can see an mordan flip clock 
+# [ Click Me ](Indranilsaha84.github.io/snake Game.HTML)
+### Here you can play Snake Game 
 # [ Click Me ](https://config.office.com/deploymentsettings)
 ### Here you can download your Microsoft office latest verson!
 # [ Click Me ](https://softzar.com/adobe-photoshop-cc-2022-free-download/)
