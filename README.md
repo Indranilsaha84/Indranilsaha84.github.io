@@ -15,7 +15,8 @@
 # [ Click Me ](http://indranilsaha84.github.io/mordan%20flip%20clock%20with%20Date.HTML)
 ### Here you can see an mordan flip clock
 # [ Click ME](https://indranilsaha84.github.io/clock.HTML)
-### Here you can play Snake Game  
+### Here you can play Snake Game 
+This game under update . This may take a few days. Sorry
 # [Click Me ](https://indranilsaha84.github.io/Snake%20Game%20pro.html)
 ###  Here you can download your Microsoft office latest verson!
 # [ Click Me ](https://config.office.com/deploymentsettings)
