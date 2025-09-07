@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Clock</title>
+    <style>
+        @font-face {
+            font-family: 'Lavishly Yours';
+            src: url('LavishlyYours.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @keyframes gradient-animation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #00ff22);
+            background-size: 400% 400%;
+            animation: gradient-animation 8s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Lavishly Yours', cursive;
+        }
+        .flip-clock {
+            display: flex;
+            gap: 80px;
+            /* Glass effect */
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 64px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            padding: 80px 120px;
+        }
+        .flip-unit {
+            background: rgba(255,255,255,0.22);
+            border-radius: 40px;
+            box-shadow: 0 12px 48px #0006;
+            color: #fff;
+            font-family: 'Lavishly Yours', cursive;
+            font-size: 12em;
+            width: 340px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid rgba(255,255,255,0.18);
+        }
+        .label {
+            font-size: 0.28em;
+            color: #e0e0e0;
+            margin-top: 40px;
+            letter-spacing: 2px;
+            font-family: 'Lavishly Yours', cursive;
+        }
+        .flip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(180deg, #fff2 0%, #fff0 100%);
+            border-radius: 40px 40px 0 0;
+            transform-origin: bottom;
+            transform: rotateX(0deg);
+            transition: transform 0.5s cubic-bezier(.4,2,.3,1);
+            z-index: 2;
+            box-shadow: 0 8px 32px #0004;
+        }
+        .flip.down {
+            transform: rotateX(-90deg);
+        }
+        .flip-unit span {
+            text-shadow: 0 8px 32px #0008;
+            font-family: 'Lavishly Yours', cursive;
+        }
+        @media (max-width: 900px) {
+            .flip-clock {
+                gap: 16px;
+                padding: 16px 8px;
+            }
+            .flip-unit {
+                font-size: 2em;
+                width: 60px;
+                height: 70px;
+            }
+            .label {
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flip-clock">
+        <div class="flip-unit" id="hours">
+            <div class="flip" id="flip-hours"></div>
+            <span id="hours-value">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="minutes">
+            <div class="flip" id="flip-minutes"></div>
+            <span id="minutes-value">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="seconds">
+            <div class="flip" id="flip-seconds"></div>
+            <span id="seconds-value">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="ampm" style="width:100px;font-size:2.5em;">
+            <span id="ampm-value">AM</span>
+            <span class="label">AM/PM</span>
+        </div>
+    </div>
+    <script>
+        function pad(n) {
+            return n < 10 ? '0' + n : n;
+        }
+
+        function flip(unit, value) {
+            const flipEl = document.getElementById('flip-' + unit);
+            const valueEl = document.getElementById(unit + '-value');
+
+            // 1. Reset the flap to its initial state (up)
+            flipEl.classList.remove('down');
+
+            // 2. Wait for a short moment, then start the animation and update the text.
+            setTimeout(() => {
+                flipEl.classList.add('down');
+                valueEl.textContent = pad(value);
+            }, 80);
+
+            // 3. Use an event listener to clean up the 'down' class after the animation.
+            flipEl.addEventListener('transitionend', () => {
+                flipEl.classList.remove('down');
+            }, { once: true });
+        }
+
+        let last = {h: null, m: null, s: null, ampm: null};
+
+        // The main animation loop, powered by requestAnimationFrame for smoothness.
+        function clockLoop() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            let h12 = h % 12;
+            h12 = h12 === 0 ? 12 : h12;
+
+            if (h12 !== last.h) {
+                flip('hours', h12);
+                last.h = h12;
+            }
+            if (m !== last.m) {
+                flip('minutes', m);
+                last.m = m;
+            }
+            if (s !== last.s) {
+                flip('seconds', s);
+                last.s = s;
+            }
+            if (ampm !== last.ampm) {
+                document.getElementById('ampm-value').textContent = ampm;
+                last.ampm = ampm;
+            }
+
+            requestAnimationFrame(clockLoop);
+        }
+
+        // Sets the initial clock time on page load without animations.
+        function initClock() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            let h12 = h % 12;
+            h12 = h12 === 0 ? 12 : h12;
+
+            document.getElementById('hours-value').textContent = pad(h12);
+            document.getElementById('minutes-value').textContent = pad(m);
+            document.getElementById('seconds-value').textContent = pad(s);
+            document.getElementById('ampm-value').textContent = ampm;
+
+            // Store the initial time to prevent initial animations on load.
+            last = { h: h12, m, s, ampm };
+        }
+
+        initClock();
+        requestAnimationFrame(clockLoop);
+    </script>
+</body>
+</html>
