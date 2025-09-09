@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Flip Clock</title>
+    <!-- Use Orbitron font from Google Fonts for a modern digital look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes gradient-animation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        body {
+            font-family: 'Orbitron', Arial, sans-serif;
+            background: linear-gradient(-100deg, #51ff00, #8300fd, #0b19ddd2, #66ff00e1);
+            background-size: 400% 400%;
+            animation: gradient-animation 10s ease infinite;
+            color: #fff; /* Keep text color white for clock elements */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .flip-clock {
+            display: flex;
+            gap: 32px;
+            background: rgba(30, 30, 30, 0.18);
+            border-radius: 32px;
+            box-shadow: 0 8px 32px #0008;
+            padding: 32px 48px;
+            -webkit-backdrop-filter: blur(16px) saturate(180%); /* For Safari compatibility */
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .flip-unit {
+            background: rgba(40,40,40,0.28);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px #0006;
+            color: #fff;
+            font-size: 7em;      /* Increased from 4em */
+            width: 210px;        /* Increased from 120px */
+            height: 240px;       /* Increased from 140px */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.18);
+            transition: box-shadow 0.3s;
+        }
+        .flip-unit:hover {
+            box-shadow: 0 8px 32px #000a;
+        }
+        .label {
+            font-size: 0.32em;
+            color: #b0b0b0;
+            margin-top: 12px;
+            letter-spacing: 2px;
+            font-family: inherit;
+            font-weight: 700;
+            text-shadow: 0 1px 4px #0006;
+            user-select: none;
+        }
+        .flip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(180deg, #fff2 0%, #fff0 100%);
+            border-radius: 18px 18px 0 0;
+            transform-origin: bottom;
+            transform: rotateX(0deg);
+            transition: transform 0.5s cubic-bezier(.4,2,.3,1);
+            z-index: 2;
+            box-shadow: 0 2px 8px #0002;
+            pointer-events: none;
+        }
+        .flip.down {
+            transform: rotateX(-90deg);
+        }
+        .flip-unit span {
+            text-shadow: 0 2px 8px #0008;
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            letter-spacing: 2px;
+            user-select: none;
+        }
+        #ampm-value {
+            font-size: 1em;   /* Reduced from 1.5em */
+            margin-top: 40px;
+            color: #fff;
+            text-shadow: 0 2px 8px #0008;
+            font-weight: 700;
+            letter-spacing: 2px;
+            user-select: none;
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .flip-clock {
+                gap: 12px;
+                padding: 16px 8px;
+            }
+            .flip-unit {
+                font-size: 2em;
+                width: 60px;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flip-clock" aria-label="Flip Clock">
+        <div class="flip-unit" id="hours">
+            <div class="flip" id="flip-hours" aria-hidden="true"></div>
+            <span id="hours-value" aria-label="Hours">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="minutes">
+            <div class="flip" id="flip-minutes" aria-hidden="true"></div>
+            <span id="minutes-value" aria-label="Minutes">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="seconds">
+            <div class="flip" id="flip-seconds" aria-hidden="true"></div>
+            <span id="seconds-value" aria-label="Seconds">00</span>
+            <span class="label"></span>
+        </div>
+        <div class="flip-unit" id="ampm">
+            <span id="ampm-value" aria-label="AM or PM">AM</span>
+            <span class="label"></span>
+        </div>
+    </div>
+    <script>
+        function pad(n) {
+            return n < 10 ? '0' + n : n;
+        }
+        function flip(unit, value) {
+            const flipEl = document.getElementById('flip-' + unit);
+            const valueEl = document.getElementById(unit + '-value');
+            flipEl.classList.remove('down');
+            setTimeout(() => {
+                flipEl.classList.add('down');
+                valueEl.textContent = pad(value);
+            }, 80);
+            setTimeout(() => {
+                flipEl.classList.remove('down');
+            }, 500);
+        }
+        let last = {h: null, m: null, s: null, ampm: null};
+        function updateClock() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            // Convert to 12-hour format
+            h = h % 12;
+            if (h === 0) h = 12;
+            if (h !== last.h) flip('hours', h);
+            if (m !== last.m) flip('minutes', m);
+            if (s !== last.s) flip('seconds', s);
+            if (ampm !== last.ampm) {
+                document.getElementById('ampm-value').textContent = ampm;
+            }
+            last = {h, m, s, ampm};
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
