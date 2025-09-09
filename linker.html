@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>master web</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        @keyframes gradient-animation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(-100deg, #51ff00, #8300fd, #0b19ddd2, #66ff00e1);
+            background-size: 400% 400%;
+            animation: gradient-animation 10s ease infinite;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        h1 {
+            color: #fff;
+            text-align: center;
+            font-size: 2.8rem;
+            /* Slightly larger for the new text */
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            line-height: 1.2;
+            /* Adjust line height for multi-line heading */
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: rgba(255, 255, 255, 0.25);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border-left: 5px solid transparent;
+        }
+
+        li:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateX(5px);
+            border-left: 5px solid #fff;
+        }
+
+        a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 400;
+            display: block;
+            transition: color 0.3s ease;
+        }
+
+        .link-description {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: #eee;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .footer-text {
+            text-align: center;
+            color: #fff;
+            margin-top: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            opacity: 0.9;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .bug-report-bar {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            color: #eee;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .bug-report-bar code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: #5dade2;
+            font-family: monospace;
+            user-select: all;
+            /* Makes the email easy to select and copy */
+        }
+
+        /* Live Clock Styles */
+        #live-clock-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            color: #fff;
+            z-index: 1000;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #time {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        #date {
+            font-size: 0.9rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        /* --- AI Chat Widget Styles --- */
+        #chat-toggle-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        #chat-toggle-btn:hover {
+            transform: scale(1.1);
+            background-color: #2980b9;
+        }
+
+        #ai-chat-widget {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 100%;
+            max-width: 380px;
+            height: 70vh;
+            max-height: 550px;
+            z-index: 1000;
+            transition: opacity 0.3s, transform 0.3s;
+            transform-origin: bottom right;
+        }
+
+        #ai-chat-widget.hidden {
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+        }
+
+        .chat-container-widget {
+            width: 100%;
+            height: 100%;
+            background: rgba(40, 55, 71, 0.192);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.089);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.226);
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+        }
+
+        .chat-header h1 {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 500;
+            text-shadow: none;
+            margin: 0;
+            text-align: left;
+            line-height: 1;
+            /* Reset line-height */
+        }
+
+        #chat-close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        #chat-close-btn:hover {
+            opacity: 1;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message .bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.user .bubble {
+            background-color: #3498db;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            align-items: flex-start;
+        }
+
+        .message.bot .bubble {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.typing .bubble {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            display: inline-block;
+        }
+
+        .dot-flashing {
+            position: relative;
+            width: 8px;
+            height: 8px;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #fff;
+            animation: dotFlashing 1s infinite linear alternate;
+            animation-delay: .5s;
+        }
+
+        .dot-flashing::before,
+        .dot-flashing::after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #fff;
+        }
+
+        .dot-flashing::before {
+            left: -12px;
+            animation: dotFlashing 1s infinite alternate;
+            animation-delay: 0s;
+        }
+
+        .dot-flashing::after {
+            left: 12px;
+            animation: dotFlashing 1s infinite alternate;
+            animation-delay: 1s;
+        }
+
+        @keyframes dotFlashing {
+            0% {
+                opacity: 0.5;
+            }
+
+            50%,
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-area input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #3498db;
+        }
+
+        .input-area button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background-color: #3498db;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .input-area button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="live-clock-container">
+        <div id="time"></div>
+        <div id="date"></div>
+    </div>
+    <div class="container">
+        <h1>Hello there!</h1>
+        <ul>
+            <li><a href="https://indranilsaha84.github.io/Snake%20Game%20pro.html" target="_blank"
+                    rel="noopener noreferrer">
+                    Snake Game Pro
+                    <span class="link-description">Here you can play the Snake game. This is the upgraded
+                        version.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/application.html" target="_blank" rel="noopener noreferrer">
+                    Application
+                    <span class="link-description">Generate an application for a Leave of Absence</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/clock.HTML" target="_blank" rel="noopener noreferrer">
+                    Modern Flip Clock
+                    <span class="link-description">Here you can access a modern flip clock.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/mordan%20flip%20clock%20with%20Date%20glass%20effect.HTML"
+                    target="_blank" rel="noopener noreferrer">
+                    Modern Flip Clock with Glass Effect
+                    <span class="link-description">The modern clock with a date and an ultra glass effect.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/mordan%20flip%20clock%20with%20Date.HTML" target="_blank"
+                    rel="noopener noreferrer">
+                    Modern Flip Clock with Date
+                    <span class="link-description">The modern flip clock with a date.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/mordan%20clock%20with%20glass%20effect.HTML" target="_blank"
+                    rel="noopener noreferrer">
+                    Modern Clock with Glass Effect
+                    <span class="link-description">A simple modern clock with the glass effect, without the date.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/profasional%20flip%20clock%20with%20date%20with%20glass%20effect.HTML"
+                    target="_blank" rel="noopener noreferrer">
+                    Professional Flip Clock with Glass Effect
+                    <span class="link-description">The professional clock with a date and the new glass effect.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/profasional%20flip%20clock%20without%20date%20with%20glass%20effect.HTML"
+                    target="_blank" rel="noopener noreferrer">
+                    Professional Flip Clock without Date (Glass Effect)
+                    <span class="link-description">The professional clock with a glass effect, without the date.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/profasional%20flip%20clock%20with%20date.HTML" target="_blank"
+                    rel="noopener noreferrer">
+                    Professional Flip Clock with Date
+                    <span class="link-description">The professional clock with a date.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/profasional%20flip%20clock.HTML" target="_blank"
+                    rel="noopener noreferrer">
+                    Professional Flip Clock
+                    <span class="link-description">The professional clock without a date.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/sealf%201.html" target="_blank" rel="noopener noreferrer">
+                    Student Info Form (Sister)
+                    <span class="link-description">A form to auto-generate a paragraph about a student with a
+                        sister.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/sealf%202.html" target="_blank" rel="noopener noreferrer">
+                    Student Info Form (Brother)
+                    <span class="link-description">A form to auto-generate a paragraph about a student with a
+                        brother.</span>
+                </a></li>
+            <li><a href="https://indranilsaha84.github.io/sintific%20calculator.html" target="_blank"
+                    rel="noopener noreferrer">
+                    Scientific Calculator
+                    <span class="link-description">A modern scientific calculator with advanced mathematical
+                        functions.</span>
+                </a></li>
+            <li><a href="https://www.chess.com/" target="_blank" rel="noopener noreferrer">
+                    Play Chess Online
+                    <span class="link-description">play it . I have ever created this game for you </span>
+                </a></li>
+            <li><a href="https://config.office.com/deploymentsettings" target="_blank" rel="noopener noreferrer">
+                    Office Configuration Tool
+                    <span class="link-description">Create the configuration file for your custom Microsoft 365 Apps
+                        installation. some codes and an app of Microsoft are requared . the app's download link is
+                        bellow</span>
+                </a></li>
+            <li><a href="https://www.microsoft.com/en-us/download/details.aspx?id=49117" target="_blank"
+                    rel="noopener noreferrer">
+                    Office Deployment Tool
+                    <span class="link-description">Download the tool required to deploy Microsoft office </span>
+                </a></li>
+            <li><a href="https://softzar.com/adobe-photoshop-cc-2022-free-download/" target="_blank"
+                    rel="noopener noreferrer">
+                    Adobe Photoshop
+                    <span class="link-description">Download Adobe Photoshop for free from here.</span>
+                </a></li>
+            <li><a href="https://softzar.com/adobe-lightroom-classic-2022/" target="_blank"
+                    rel="noopener noreferrer">
+                    Adobe Lightroom Classic
+                    <span class="link-description">Download Adobe Lightroom for photo editing and management. It life time free</span>
+                </a></li>
+            <li><a href="https://softzar.com/adobe-illustrator-cc-2022/" target="_blank"
+                    rel="noopener noreferrer">
+                    Adobe Illustrator CC 2022
+                    <span class="link-description">Download Adobe Illustrator for vector graphics and illustration. it life time free</span>
+                </a></li>
+            <li><a href="https://softzar.com/adobe-indesign-2022-free-download/" target="_blank"
+                    rel="noopener noreferrer">
+                    Adobe InDesign 2022
+                    <span class="link-description">Download Adobe InDesign for page design and layout. it life time free</span>
+                </a></li>
+            <li><a href="https://softzar.com/adobe-after-effects-latest/" target="_blank"
+                    rel="noopener noreferrer">
+                    Adobe After Effects
+                    <span class="link-description">Download Adobe After Effects for motion graphics and visual effects. it life time free</span>
+                </a></li>
+            <li><a href="https://github.com/Indranilsaha84/Indranilsaha84.github.io.git" target="_blank" rel="noopener noreferrer">
+                    GitHub Profile
+                    <span class="link-description">Explore my coding projects and contributions on GitHub.</span>
+                </a></li>
+        </ul>
+        <div class="bug-report-bar">
+            If you find a bug or have a suggestion regarding this website, please send an email to:
+            <code>sahaindranil1984@gmail.com</code>
+        </div>
+        <p class="footer-text">
+            Thanks for visiting my website.<br>Created by a boy from Bangladesh.<br>© All rights reserved.
+        </p>
+    </div>
+
+    <!-- Floating Chat Button -->
+    <button id="chat-toggle-btn" title="Chat with AI">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+            <rect x="9" y="9" width="6" height="6"></rect>
+            <line x1="9" y1="1" x2="9" y2="4"></line>
+            <line x1="15" y1="1" x2="15" y2="4"></line>
+            <line x1="9" y1="20" x2="9" y2="23"></line>
+            <line x1="15" y1="20" x2="15" y2="23"></line>
+            <line x1="20" y1="9" x2="23" y2="9"></line>
+            <line x1="20" y1="14" x2="23" y2="14"></line>
+            <line x1="1" y1="9" x2="4" y2="9"></line>
+            <line x1="1" y1="14" x2="4" y2="14"></line>
+        </svg>
+    </button>
+
+    <!-- AI Chatbot Widget -->
+    <div id="ai-chat-widget" class="hidden">
+        <div class="chat-container-widget">
+            <div class="chat-header">
+                <h1>AI Assistant</h1>
+                <button id="chat-close-btn">&times;</button>
+            </div>
+            <div class="chat-box" id="chatBox">
+                <div class="message bot">
+                    <div class="bubble">Hello! I'm an AI assistant. Ask me about this website projects.</div>
+                </div>
+            </div>
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Type a message..." autocomplete="off">
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function updateClock() {
+            const now = new Date();
+
+            // Time
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            document.getElementById('time').textContent = now.toLocaleTimeString('en-US', timeOptions);
+
+            // Date
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', dateOptions);
+        }
+
+        // Update the clock every second
+        setInterval(updateClock, 1000);
+
+        // Initial call to display clock immediately without waiting for 1 second
+        updateClock();
+
+        // --- AI Chat Widget Logic ---
+        const chatToggleBtn = document.getElementById('chat-toggle-btn');
+        const chatWidget = document.getElementById('ai-chat-widget');
+        const chatCloseBtn = document.getElementById('chat-close-btn');
+
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        chatToggleBtn.addEventListener('click', () => {
+            chatWidget.classList.toggle('hidden');
+            if (!chatWidget.classList.contains('hidden')) {
+                userInput.focus();
+            }
+        });
+
+        chatCloseBtn.addEventListener('click', () => {
+            chatWidget.classList.add('hidden');
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const messageText = userInput.value.trim();
+            if (messageText === '') return;
+
+            addMessage(messageText, 'user');
+            userInput.value = '';
+
+            // Get bot response immediately to calculate typing duration
+            const botResponse = getBotResponse(messageText);
+
+            // Calculate a realistic typing delay based on response length
+            // e.g., 40ms per character + a base delay of 500ms.
+            const typingSpeed = 40; // ms per character
+            const baseDelay = 500; // ms
+            const typingDelay = Math.min(botResponse.length * typingSpeed + baseDelay, 4000); // Max 4 seconds
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Use the calculated delay
+            setTimeout(() => {
+                // Hide typing indicator
+                hideTypingIndicator();
+                addMessage(botResponse, 'bot');
+            }, typingDelay);
+        }
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.classList.add('bubble');
+            bubbleDiv.textContent = text;
+
+            messageDiv.appendChild(bubbleDiv);
+            chatBox.appendChild(messageDiv);
+
+            // Scroll to the bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot', 'typing'); // Added 'bot' class for alignment
+            messageDiv.id = 'typing-indicator'; // ID to find and remove it
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.classList.add('bubble');
+
+            const typingDots = document.createElement('div');
+            typingDots.classList.add('dot-flashing');
+
+            bubbleDiv.appendChild(typingDots);
+            messageDiv.appendChild(bubbleDiv);
+            chatBox.appendChild(messageDiv);
+
+            // Scroll to the bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function getBotResponse(userText) {
+            const text = userText.toLowerCase();
+
+            // Response map with keywords and corresponding answers
+            const responseMap = [
+                {
+                    keywords: ['hello', 'hi', 'hey'],
+                    response: "Hello there! I'm Indranil's AI assistant. Feel free to ask me about any of the projects on this page."
+                },
+                {
+                    keywords: ['who are you', 'what are you', 'about you'],
+                    response: "I am a rule-based AI chatbot created by Indranil saha to help you learn about this website's projects. I'm not a true AI, but I try my best!"
+                },
+                {
+                    keywords: ['indranil', 'creator', 'who made this'],
+                    response: "Indranil Saha is the creator of this website and all the projects you see here. He is a child developer from Bangladesh with a passion for coding!"
+                },
+                {
+                    keywords: ['code', 'source', 'github'],
+                    response: "Of course! The source code for all projects, including this website, is available on GitHub profile. The link is on the main list. It's the best place to see how everything was built."
+                },
+                {
+                    keywords: ['project', 'work', 'what can you do'],
+                    response: "I can tell you about any of this website's projects. For example, you can ask about the 'Snake Game', the 'clocks', the 'calculator', or the 'feedback' page."
+                },
+                {
+                    keywords: ['snake'],
+                    response: "The Snake Game is a classic arcade game where you control a snake to eat food and grow longer. This pro version has multiple graphics styles, speed settings, and even a user account system! to save your info and score"
+                },
+                {
+                    keywords: ['calculator'],
+                    response: "The scientific calculator is a sleek, modern tool built with HTML, CSS, and JavaScript. It can handle standard arithmetic as well as functions like sine, cosine, logarithms, and square roots."
+                },
+                {
+                    keywords: ['application'],
+                    response: "The Application Generator is a handy tool that helps you quickly write a formal leave of absence letter for school. Just fill in the details and it generates the text for you."
+                },
+                {
+                    keywords: ['clock', 'clocks'],
+                    response: "There are several clock projects! They showcase different designs, from modern flip clocks to professional ones, with features like dates and a cool glassmorphism effect. They're great examples of what you can do with CSS and JavaScript."
+                },
+                {
+                    keywords: ['student info', 'sealf', 'form'],
+                    response: "The 'Student Info' forms are simple but clever apps. They use Pyodide to run Python code directly in the browser, generating a descriptive paragraph from the details you enter."
+                },
+                {
+                    keywords: ['bug', 'report', 'suggestion', 'contact', 'email', 'feedback'],
+                    response: "If you've found a bug or have a suggestion, that's great! Please send an email directly to Indranil at sahaindranil1984@gmail.com. He appreciates the feedback!"
+                },
+                {
+                    keywords: ['chess'],
+                    response: "That's a link to Chess.com, the most popular platform for playing chess online. It's a great way to test your strategic skills against players from around the world! This is also created by Insdranil saha"
+                },
+                {
+                    keywords: ['office', 'microsoft'],
+                    response: "There are two links for Microsoft Office. One is for the Deployment Settings to create a configuration file, and the other is to download the Office Deployment Tool itself. You need both to install a custom version of Office."
+                },
+                {
+                    keywords: ['photoshop', 'lightroom', 'illustrator', 'indesign', 'after effects', 'adobe', 'photo editing'],
+                    response: "There are links to download Adobe Photoshop, Lightroom, Illustrator, InDesign, and After Effects from Softzar. They are powerful tools for photo editing, graphic design, vector illustration, page layout, and motion graphics."
+                },
+                {
+                    keywords: ['bye', 'goodbye', 'see ya'],
+                    response: "Goodbye! Thanks for chatting. Have a great day exploring the projects."
+                },
+                {
+                    keywords: ['joke', 'funny'],
+                    response: "Why don't scientists trust atoms? Because they make up everything!"
+                },
+                {
+                    keywords: ['how are you'],
+                    response: "I'm just a bunch of code, but I'm running perfectly! Thanks for asking. How can I help you?"
+                }
+            ];
+
+            // Find the best matching response
+            for (const item of responseMap) {
+                for (const keyword of item.keywords) {
+                    if (text.includes(keyword)) {
+                        return item.response;
+                    }
+                }
+            }
+
+            // Default fallback response
+            return "I'm not quite sure how to answer that. I'm still learning! You can try asking me about 'projects', the 'snake game', or 'who made this website' pls help me by getting feedback how can i improve my sealf?.";
+        }
+    </script>
+</body>
+
+</html>
