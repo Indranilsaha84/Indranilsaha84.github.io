@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Private page of BCAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Babel for in-browser JSX/TSX transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+    "react-markdown": "https://esm.sh/react-markdown@9",
+    "remark-gfm": "https://esm.sh/remark-gfm@4",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+    <style>
+      .markdown-content strong { font-weight: bold; }
+      .markdown-content em { font-style: italic; }
+      .markdown-content del { text-decoration: line-through; }
+      .markdown-content p { margin-bottom: 1rem; }
+      .markdown-content p:last-child { margin-bottom: 0; }
+      .markdown-content h1, .markdown-content h2, .markdown-content h3 { font-weight: bold; margin-bottom: 1rem; margin-top: 1.5rem; }
+      .markdown-content ul, .markdown-content ol { list-style-position: inside; margin-left: 1.5rem; margin-bottom: 1rem; }
+      .markdown-content li { margin-bottom: 0.25rem; }
+      .markdown-content code { background-color: #4a5568; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
+      .markdown-content pre { background-color: #2d3748; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
+      .markdown-content pre code { background-color: transparent; padding: 0; }
+    </style>
+</head>
+  <body class="bg-gray-900 text-gray-100">
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+// Polyfill 'process' for browser environment if it doesn't exist.
+if (typeof process === 'undefined') {
+  window.process = { env: {} };
+}
+
+import React, { useState, useCallback } from 'react';
+import ReactDOM from 'react-dom/client';
+import { GoogleGenAI } from "@google/genai";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// types.ts
+const Tab = {
+  OCR: 'OCR',
+  COMPARE: 'Compare',
+  PROOFREAD: 'Proofread',
+  ACCOUNT: 'Account',
+};
+
+// utils/fileUtils.ts
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result;
+      // remove the `data:mime/type;base64,` prefix
+      resolve(result.split(',')[1]);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+// services/geminiService.ts
+const getAiClient = (apiKey) => {
+  if (!apiKey) {
+    throw new Error("API key is not available. This app is designed to run in a specific environment where an API key is provided.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
+
+
+const extractTextFromImage = async (base64Image, mimeType, apiKey) => {
+  try {
+    const ai = getAiClient(apiKey);
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: {
+            parts: [
+                { text: "Extract all text from this document image. Preserve the original formatting as much as possible, including line breaks and paragraphs." },
+                { inlineData: { mimeType, data: base64Image } },
+            ],
+        },
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Error extracting text from image:", error);
+    if (error.message.includes("API key")) {
+        throw new Error("API Key is missing or invalid. Please check your setup.");
+    }
+    throw new Error("Failed to analyze the document image. Please try again.");
+  }
+};
+
+const compareTexts = async (textA, textB, apiKey) => {
+    try {
+        const ai = getAiClient(apiKey);
+        const prompt = `You are a document comparison expert. Analyze the two documents provided below and highlight the differences.
+        Format the output clearly using Markdown. Use strikethroughs for deleted text in Document A and bold for added text in Document B.
+        Provide a summary of changes at the top.
+
+        --- DOCUMENT A ---
+        ${textA}
+        --- END DOCUMENT A ---
+
+        --- DOCUMENT B ---
+        ${textB}
+        --- END DOCUMENT B ---
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt
+        });
+        return response.text;
+    } catch (error) {
+        console.error("Error comparing texts:", error);
+        if (error.message.includes("API key")) {
+            throw new Error("API Key is missing or invalid. Please check your setup.");
+        }
+        throw new Error("Failed to compare the documents. Please try again.");
+    }
+};
+
+const proofreadAndExpand = async (text, apiKey) => {
+    try {
+        const ai = getAiClient(apiKey);
+        const prompt = `You are an expert proofreader and editor.
+        Please perform the following tasks on the text below:
+        1. Correct any spelling and grammatical errors.
+        2. Identify and expand any common abbreviations or short forms into their full words (e.g., 'etc.' -> 'et cetera', 'ASAP' -> 'as soon as possible').
+        
+        Return the fully corrected and expanded text.
+
+        --- TEXT TO PROCESS ---
+        ${text}
+        --- END TEXT TO PROCESS ---
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt
+        });
+        return response.text;
+    } catch (error) {
+        console.error("Error proofreading text:", error);
+        if (error.message.includes("API key")) {
+            throw new Error("API Key is missing or invalid. Please check your setup.");
+        }
+        throw new Error("Failed to process the text. Please try again.");
+    }
+};
+
+
+// components/icons/DocumentScanIcon.tsx
+const DocumentScanIcon = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    <path d="M9 12h3" />
+    <path d="M9 17h6" />
+    <path d="M9 14.5h6" />
+  </svg>
+);
+
+
+// components/icons/CompareIcon.tsx
+const CompareIcon = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <path d="M12 3v18" />
+    <path d="M8 8l-4 4 4 4" />
+    <path d="M16 16l4-4-4-4" />
+  </svg>
+);
+
+
+// components/icons/SpellCheckIcon.tsx
+const SpellCheckIcon = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m6 16 6-12 6 12" />
+    <path d="M8 12h8" />
+    <path d="m16 20 2 2 4-4" />
+  </svg>
+);
+
+// components/icons/UserIcon.tsx
+const UserIcon = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+
+// components/shared/Spinner.tsx
+const Spinner = () => (
+  <svg
+    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
+  </svg>
+);
+
+// components/OcrTab.tsx
+const OcrTab = ({ apiKey }) => {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [extractedText, setExtractedText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
+      setExtractedText('');
+      setError('');
+    }
+  };
+
+  const handleExtractText = useCallback(async () => {
+    if (!file) {
+      setError('Please select a file first.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setExtractedText('');
+
+    try {
+      const base64Image = await fileToBase64(file);
+      const text = await extractTextFromImage(base64Image, file.type, apiKey);
+      setExtractedText(text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [file, apiKey]);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
+      <div className="flex flex-col space-y-4">
+        <h2 className="text-2xl font-bold text-cyan-400">Upload Document</h2>
+        <div className="flex-grow flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-4 bg-gray-800/50">
+          <div className="text-center">
+            {preview ? (
+              <img src={preview} alt="Document preview" className="max-h-80 mx-auto rounded-md shadow-lg" />
+            ) : (
+              <DocumentScanIcon className="mx-auto h-12 w-12 text-gray-500" />
+            )}
+            <input type="file" accept="image/*" onChange={handleFileChange} className="mt-4 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-700" />
+          </div>
+        </div>
+        <button
+          onClick={handleExtractText}
+          disabled={!file || isLoading}
+          className="w-full flex justify-center items-center bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300"
+        >
+          {isLoading ? <Spinner /> : 'Extract Text'}
+        </button>
+      </div>
+      <div className="flex flex-col space-y-4">
+        <h2 className="text-2xl font-bold text-cyan-400">Extracted Text</h2>
+        <div className="flex-grow bg-gray-800/50 border border-gray-700 rounded-lg p-4 overflow-auto h-96">
+          {isLoading ? (
+             <div className="flex items-center justify-center h-full">
+                <Spinner />
+                <p className="ml-2">Analyzing document...</p>
+             </div>
+          ) : error ? (
+            <p className="text-red-400">{error}</p>
+          ) : (
+            <pre className="whitespace-pre-wrap font-mono text-gray-300">{extractedText || "Text will appear here..."}</pre>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// components/CompareTab.tsx
+const initialDocInput = { text: '', file: null, preview: null };
+
+const DocumentInput = ({ doc, setDoc, title }) => {
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            setDoc({ file: selectedFile, preview: URL.createObjectURL(selectedFile), text: '' });
+        }
+    };
+    
+    return (
+        <div className="flex flex-col space-y-2 h-full">
+            <h3 className="text-xl font-semibold text-cyan-400">{title}</h3>
+            <textarea
+                value={doc.text}
+                onChange={(e) => setDoc({ ...doc, text: e.target.value, file: null, preview: null })}
+                placeholder="Paste text here or upload an image below"
+                className="w-full flex-grow bg-gray-800/50 border border-gray-700 rounded-lg p-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+            ></textarea>
+             <div className="text-center p-2 border-2 border-dashed border-gray-600 rounded-lg bg-gray-800/50">
+                {doc.preview && <img src={doc.preview} alt="preview" className="max-h-20 mx-auto mb-2 rounded" />}
+                <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-gray-400 file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-600/50 file:text-white hover:file:bg-cyan-700/50"/>
+             </div>
+        </div>
+    );
+};
+
+
+const CompareTab = ({ apiKey }) => {
+    const [docA, setDocA] = useState(initialDocInput);
+    const [docB, setDocB] = useState(initialDocInput);
+    const [comparisonResult, setComparisonResult] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const getTextFromDoc = async (doc) => {
+        if (doc.text) return doc.text;
+        if (doc.file) {
+            const base64 = await fileToBase64(doc.file);
+                  return await extractTextFromImage(base64, doc.file.type, apiKey);
+        }
+        return '';
+    };
+
+    const handleCompare = useCallback(async () => {
+        setIsLoading(true);
+        setError('');
+        setComparisonResult('');
+        try {
+            const textA = await getTextFromDoc(docA);
+            const textB = await getTextFromDoc(docB);
+
+            if (!textA || !textB) {
+                setError('Both documents must have content to compare.');
+                setIsLoading(false);
+                return;
+            }
+
+                  const result = await compareTexts(textA, textB, apiKey);
+            setComparisonResult(result);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+        } finally {
+            setIsLoading(false);
+        }
+          }, [docA, docB, apiKey]);
+
+
+    return (
+        <div className="p-4 flex flex-col h-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow" style={{minHeight: "400px"}}>
+                <DocumentInput doc={docA} setDoc={setDocA} title="Document A (Original)" />
+                <DocumentInput doc={docB} setDoc={setDocB} title="Document B (Revised)" />
+            </div>
+            <div className="my-4 text-center">
+                 <button
+                    onClick={handleCompare}
+                    disabled={isLoading}
+                    className="w-1/2 flex justify-center items-center mx-auto bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300"
+                >
+                    {isLoading ? <Spinner /> : 'Compare Documents'}
+                </button>
+            </div>
+            <div className="flex-grow bg-gray-800/50 border border-gray-700 rounded-lg p-4 overflow-auto h-96">
+                 <h2 className="text-2xl font-bold text-cyan-400 mb-2">Comparison Result</h2>
+                 {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <Spinner />
+                        <p className="ml-2">Comparing documents...</p>
+                    </div>
+                 ) : error ? (
+                    <p className="text-red-400">{error}</p>
+                 ) : (
+                    <div className="markdown-content text-gray-300">
+                        {comparisonResult ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{comparisonResult}</ReactMarkdown> : <p>Comparison results will appear here...</p>}
+                    </div>
+                 )}
+            </div>
+        </div>
+    );
+};
+
+
+// components/ProofreadTab.tsx
+const ProofreadTab = ({ apiKey }) => {
+  const [inputText, setInputText] = useState('');
+  const [correctedText, setCorrectedText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleProofread = useCallback(async () => {
+    if (!inputText.trim()) {
+      setError('Please enter some text to proofread.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setCorrectedText('');
+
+    try {
+      const result = await proofreadAndExpand(inputText, apiKey);
+      setCorrectedText(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [inputText, apiKey]);
+
+  return (
+    <div className="p-4 flex flex-col h-full space-y-4">
+      <div>
+        <h2 className="text-2xl font-bold text-cyan-400 mb-2">Text to Proofread & Expand</h2>
+        <textarea
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Paste your text here to correct spelling, fix grammar, and expand abbreviations..."
+          className="w-full h-48 bg-gray-800/50 border border-gray-700 rounded-lg p-4 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+        ></textarea>
+      </div>
+      <div className="text-center">
+        <button
+          onClick={handleProofread}
+          disabled={!inputText || isLoading}
+          className="w-full md:w-1/2 flex justify-center items-center mx-auto bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300"
+        >
+          {isLoading ? <Spinner /> : 'Process Text'}
+        </button>
+      </div>
+      <div className="flex-grow">
+        <h2 className="text-2xl font-bold text-cyan-400 mb-2">Result</h2>
+        <div className="w-full h-64 bg-gray-800/50 border border-gray-700 rounded-lg p-4 overflow-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <Spinner />
+              <p className="ml-2">Processing text...</p>
+            </div>
+          ) : error ? (
+            <p className="text-red-400">{error}</p>
+          ) : (
+            <div className="markdown-content text-gray-300">
+                {correctedText ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{correctedText}</ReactMarkdown> : <p>Corrected text will appear here...</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// components/AccountCenter.tsx
+const AccountCenter = ({ user, onUpdateUser, onUpdatePassword }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableUser, setEditableUser] = useState(user);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({ current: '', newPass: '', confirmPass: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  if (!user) {
+    return <p className="p-4 text-center text-gray-400">No user data available.</p>;
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditableUser(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = () => {
+    onUpdateUser(editableUser);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditableUser(user);
+    setIsEditing(false);
+  };
+
+  const handlePasswordInputChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+    setPasswordError('');
+    setPasswordSuccess('');
+  };
+
+  const handlePasswordSave = () => {
+    if (passwordData.newPass !== passwordData.confirmPass) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+    if (!passwordData.newPass) {
+      setPasswordError("New password cannot be empty.");
+      return;
+    }
+    const result = onUpdatePassword(passwordData.current, passwordData.newPass);
+    if (result.success) {
+      setPasswordSuccess(result.message);
+      setPasswordData({ current: '', newPass: '', confirmPass: '' });
+      setIsChangingPassword(false);
+    } else {
+      setPasswordError(result.message);
+    }
+  };
+
+  return (
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold text-cyan-400">Account Details</h2>
+        {!isEditing && (
+          <button onClick={() => setIsEditing(true)} className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+            Edit
+          </button>
+        )}
+      </div>
+      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 space-y-4">
+        <AccountDetailRow label="Name" value={editableUser.name} name="name" isEditing={isEditing} onChange={handleInputChange} />
+        <AccountDetailRow label="Email" value={editableUser.email} name="email" type="email" isEditing={isEditing} onChange={handleInputChange} />
+        <AccountDetailRow label="Phone" value={editableUser.phone} name="phone" type="tel" isEditing={isEditing} onChange={handleInputChange} />
+        <AccountDetailRow label="Code" value={editableUser.code} name="code" isEditing={isEditing} onChange={handleInputChange} />
+      </div>
+      {isEditing && (
+        <div className="mt-6 flex justify-end space-x-4">
+          <button onClick={handleCancel} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Cancel</button>
+          <button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Save Changes</button>
+        </div>
+      )}
+      <div className="mt-8 pt-8 border-t border-gray-700">
+        <h3 className="text-2xl font-bold text-cyan-400 mb-4">Security</h3>
+        {passwordSuccess && <p className="mb-4 text-green-400">{passwordSuccess}</p>}
+        {!isChangingPassword ? (
+          <button onClick={() => { setIsChangingPassword(true); setPasswordSuccess(''); }} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+            Change Password
+          </button>
+        ) : (
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 space-y-4">
+            {passwordError && <p className="text-red-400 text-center">{passwordError}</p>}
+            <input type="password" name="current" placeholder="Current Password" value={passwordData.current} onChange={handlePasswordInputChange} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+            <input type="password" name="newPass" placeholder="New Password" value={passwordData.newPass} onChange={handlePasswordInputChange} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+            <input type="password" name="confirmPass" placeholder="Confirm New Password" value={passwordData.confirmPass} onChange={handlePasswordInputChange} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+            <div className="flex justify-end space-x-4 pt-2">
+              <button onClick={() => { setIsChangingPassword(false); setPasswordError(''); }} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                Cancel
+              </button>
+              <button onClick={handlePasswordSave} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                Save Password
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const AccountDetailRow = ({ label, value, name, type = 'text', isEditing, onChange }) => {
+  return (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center">
+      <p className="w-full sm:w-1/4 font-semibold text-gray-400 mb-1 sm:mb-0">{label}:</p>
+      <div className="w-full sm:w-3/4">
+        {isEditing ? (
+          <input type={type} name={name} value={value} onChange={onChange} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+        ) : (
+          <p className="text-gray-200">{value}</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- AUTHENTICATION ---
+
+const AuthForm = ({ title, fields, formData, handleChange, handleSubmit }) => (
+  <form onSubmit={handleSubmit} className="space-y-4">
+    <h2 className="text-2xl font-bold text-white mb-6 text-center">{title}</h2>
+    {fields.map(field => (
+      <div key={field.name}>
+        <label htmlFor={field.name} className="block text-sm font-medium text-gray-300">{field.label}</label>
+        <input
+          type={field.type}
+          name={field.name}
+          id={field.name}
+          value={formData[field.name]}
+          onChange={handleChange}
+          required
+          className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        />
+      </div>
+    ))}
+    <button type="submit" className="w-full px-4 py-2 text-lg font-medium text-white bg-cyan-600 rounded-md hover:bg-cyan-700">
+      {title}
+    </button>
+  </form>
+);
+
+const INITIAL_ADMIN_ACCOUNTS = [
+  {
+    name: 'Indranil saha',
+    phone: '01767666334',
+    email: 'sahaindranil1984@gmail.com', // This should be lowercase for consistent checks
+    password: 'Indranil84',
+    code: '02241977'
+  },
+  {
+    name: 'sanjoy kumar saha',
+    phone: '01762599017',
+    email: 'sanjoysaha30@gmail.com',
+    password: 'Password2477',
+    code: '02241977'
+  }
+];
+
+const AuthScreen = ({ onLoginSuccess, adminAccounts, onSignUpSuccess }) => {
+  const [isLoginView, setIsLoginView] = useState(true);
+  const [error, setError] = useState('');
+
+  const [loginData, setLoginData] = useState({ emailOrPhone: '', password: '', code: '' });
+  const [signUpData, setSignUpData] = useState({ name: '', phone: '', email: '', password: '', code: '' });
+
+  const handleLoginChange = (e) => setLoginData({ ...loginData, [e.target.name]: e.target.value });
+  const handleSignUpChange = (e) => setSignUpData({ ...signUpData, [e.target.name]: e.target.value });
+
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    const loginIdentifier = loginData.emailOrPhone.toLowerCase();
+    const foundAdmin = adminAccounts.find(
+      admin => (admin.email.toLowerCase() === loginIdentifier || admin.phone === loginData.emailOrPhone) &&
+               admin.password === loginData.password &&
+               admin.code === loginData.code
+    );
+    if (foundAdmin) {
+      onLoginSuccess(foundAdmin);
+    } else {
+      setError('Invalid credentials. Please check your details and try again.');
+    }
+  };
+
+  const handleSignUpSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    const emailExists = adminAccounts.some(
+      admin => admin.email.toLowerCase() === signUpData.email.toLowerCase().trim()
+    );
+    const phoneExists = adminAccounts.some(
+      admin => admin.phone.trim() === signUpData.phone.trim()
+    );
+
+    if (emailExists) {
+      setError('An account with this email already exists.');
+    } else if (phoneExists) {
+      setError('An account with this phone number already exists.');
+    } else {
+      // Create and add the new user
+      const newUser = {
+        name: signUpData.name.trim(),
+        phone: signUpData.phone.trim(),
+        email: signUpData.email.toLowerCase().trim(),
+        password: signUpData.password, // Passwords should be handled more securely in a real app
+        code: signUpData.code.trim(),
+      };
+      onSignUpSuccess(newUser);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col justify-center items-center p-4">
+        <div className="w-full max-w-md">
+            <h1 className="text-4xl font-bold text-center text-white mb-2">Document Reader</h1>
+            <p className="text-center text-gray-400 mb-8">for Baroda Computer and Seals</p>
+
+            <div className="bg-gray-800 p-8 rounded-lg shadow-xl">
+                <div className="flex border-b border-gray-600 mb-6">
+                    <button onClick={() => setIsLoginView(true)} className={`flex-1 py-2 font-semibold ${isLoginView ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>Login</button>
+                    <button onClick={() => setIsLoginView(false)} className={`flex-1 py-2 font-semibold ${!isLoginView ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>Sign Up</button>
+                </div>
+
+                {error && <p className="bg-red-900/50 text-red-300 p-3 rounded-md mb-4 text-center">{error}</p>}
+
+                {isLoginView ? (
+                    <AuthForm title="Login" fields={[
+                        {name: 'emailOrPhone', label: 'Email or Phone Number', type: 'text'}, 
+                        {name: 'password', label: 'Password', type: 'password'},
+                        {name: 'code', label: 'Code', type: 'text'}
+                    ]} formData={loginData} handleChange={handleLoginChange} handleSubmit={handleLoginSubmit} />
+                ) : (
+                    <AuthForm title="Sign Up" fields={[
+                        {name: 'name', label: 'Name', type: 'text'},
+                        {name: 'phone', label: 'Phone', type: 'tel'},
+                        {name: 'email', label: 'Email', type: 'email'},
+                        {name: 'password', label: 'Password', type: 'password'},
+                        {name: 'code', label: 'Code', type: 'text'}
+                    ]} formData={signUpData} handleChange={handleSignUpChange} handleSubmit={handleSignUpSubmit} />
+                )}
+            </div>
+             <footer className="text-center py-4 mt-8 text-gray-500 text-sm">
+                by © Indranil saha
+             </footer>
+        </div>
+    </div>
+  );
+};
+
+
+// App.tsx
+const App = () => {
+  // --- PERMANENT API KEY ---
+  // Replace "YOUR_API_KEY_HERE" with your actual Google Gemini API key.
+  const [adminAccounts, setAdminAccounts] = useState(INITIAL_ADMIN_ACCOUNTS);
+  const [apiKey, setApiKey] = useState('AIzaSyBC6XelQgN24CsxqYVRMWlXdcBurCe3m6U');
+  const [activeTab, setActiveTab] = useState(Tab.OCR);
+  const [currentUser, setCurrentUser] = useState(null);
+  const isAuthenticated = !!currentUser;
+
+  const handleSignUp = (newUser) => {
+    setAdminAccounts(prev => [...prev, newUser]);
+    setCurrentUser(newUser);
+  };
+
+  if (!isAuthenticated) {
+    return <AuthScreen onLoginSuccess={(user) => setCurrentUser(user)} adminAccounts={adminAccounts} onSignUpSuccess={handleSignUp} />;
+  };
+
+  const handleUserUpdate = (updatedUser) => {
+    // Update the master list of accounts
+    setAdminAccounts(prevAccounts => 
+      prevAccounts.map(account => 
+        account.email === currentUser.email ? updatedUser : account
+      )
+    );
+    // Update the currently logged-in user's state
+    setCurrentUser(updatedUser);
+  };
+
+  const handlePasswordUpdate = (currentPassword, newPassword) => {
+    if (currentUser.password !== currentPassword) {
+      return { success: false, message: "Current password is not correct." };
+    }
+
+    const updatedUser = { ...currentUser, password: newPassword };
+    
+    setAdminAccounts(prevAccounts => 
+      prevAccounts.map(account => 
+        account.email === currentUser.email ? updatedUser : account
+      )
+    );
+
+    setCurrentUser(updatedUser);
+
+    return { success: true, message: "Password updated successfully!" };
+  };
+
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case Tab.OCR:
+        return <OcrTab apiKey={apiKey} />;
+      case Tab.COMPARE:
+        return <CompareTab apiKey={apiKey} />; 
+      case Tab.PROOFREAD:
+        return <ProofreadTab apiKey={apiKey} />;
+      case Tab.ACCOUNT:
+        return <AccountCenter user={currentUser} onUpdateUser={handleUserUpdate} onUpdatePassword={handlePasswordUpdate} />;
+      default:
+        return null;
+    }
+  };
+
+  const TabButton = ({ tab, icon, label }) => {
+    const isActive = activeTab === tab;
+    return (
+      <button
+        onClick={() => setActiveTab(tab)}
+        className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-400 ${
+          isActive
+            ? 'bg-gray-800 text-cyan-400 border-b-2 border-cyan-400'
+            : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
+        }`}
+      >
+        {icon}
+        <span>{label}</span>
+      </button>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+      <header className="bg-gray-800/50 shadow-md">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex-1"></div> {/* Spacer to keep title centered */}
+          <h1 className="text-3xl font-bold text-center text-white">Document reader for Baroda Computer and Seals. <strong>(privet)</strong>
+          </h1>
+          <div className="flex-1 flex justify-end">
+            <button onClick={() => setCurrentUser(null)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+              Logout ({currentUser.name.split(' ')[0]})
+            </button>
+            <button onClick={() => setActiveTab(Tab.ACCOUNT)} className="ml-4 p-2 rounded-full hover:bg-gray-700 transition-colors">
+                <UserIcon className="w-6 h-6 text-gray-300" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto p-4 flex-grow flex flex-col">
+        <div className="border-b border-gray-700">
+          <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+            <TabButton
+              tab={Tab.OCR}
+              icon={<DocumentScanIcon className="w-5 h-5" />}
+              label="Document OCR"
+            />
+            <TabButton
+              tab={Tab.COMPARE}
+              icon={<CompareIcon className="w-5 h-5" />}
+              label="Compare Docs"
+            />
+            <TabButton
+              tab={Tab.PROOFREAD}
+              icon={<SpellCheckIcon className="w-5 h-5" />}
+              label="Proofread & Expand"
+            />
+          </nav>
+        </div>
+
+        <div className="mt-4 bg-gray-800 rounded-b-lg shadow-xl flex-grow">
+          {renderTabContent()}
+        </div>
+      </main>
+       <footer className="text-center py-4 text-gray-500 text-sm">
+            Powered by Google Gemini <br />
+            by © Indranil saha
+       </footer>
+    </div>
+  );
+};
+
+// index.tsx
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+    </script>
+  </body>
+</html>
