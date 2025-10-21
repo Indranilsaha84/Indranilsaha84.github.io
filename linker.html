@@ -23,6 +23,35 @@
             }
         }
 
+        .search-container {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #searchInput:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             line-height: 1.6;
@@ -396,6 +425,9 @@
     </div>
     <div class="container">
         <h1>Hello there!</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search projects and links...">
+        </div>
         <ul>
             <li><a href="https://indranilsaha84.github.io/Snake%20Game%20pro.html" target="_blank"
                     rel="noopener noreferrer">
@@ -482,30 +514,38 @@
                     Adobe Photoshop
                     <span class="link-description">Download Adobe Photoshop for free from here.</span>
                 </a></li>
-            <li><a href="https://softzar.com/adobe-lightroom-classic-2022/" target="_blank"
-                    rel="noopener noreferrer">
+            <li><a href="https://softzar.com/adobe-lightroom-classic-2022/" target="_blank" rel="noopener noreferrer">
                     Adobe Lightroom Classic
-                    <span class="link-description">Download Adobe Lightroom for photo editing and management. It life time free</span>
+                    <span class="link-description">Download Adobe Lightroom for photo editing and management. It life
+                        time free</span>
                 </a></li>
-            <li><a href="https://softzar.com/adobe-illustrator-cc-2022/" target="_blank"
-                    rel="noopener noreferrer">
+            <li><a href="https://softzar.com/adobe-illustrator-cc-2022/" target="_blank" rel="noopener noreferrer">
                     Adobe Illustrator CC 2022
-                    <span class="link-description">Download Adobe Illustrator for vector graphics and illustration. it life time free</span>
+                    <span class="link-description">Download Adobe Illustrator for vector graphics and illustration. it
+                        life time free</span>
                 </a></li>
             <li><a href="https://softzar.com/adobe-indesign-2022-free-download/" target="_blank"
                     rel="noopener noreferrer">
                     Adobe InDesign 2022
-                    <span class="link-description">Download Adobe InDesign for page design and layout. it life time free</span>
+                    <span class="link-description">Download Adobe InDesign for page design and layout. it life time
+                        free</span>
                 </a></li>
-            <li><a href="https://softzar.com/adobe-after-effects-latest/" target="_blank"
-                    rel="noopener noreferrer">
+            <li><a href="https://softzar.com/adobe-after-effects-latest/" target="_blank" rel="noopener noreferrer">
                     Adobe After Effects
-                    <span class="link-description">Download Adobe After Effects for motion graphics and visual effects. it life time free</span>
+                    <span class="link-description">Download Adobe After Effects for motion graphics and visual effects.
+                        it life time free</span>
                 </a></li>
-            <li><a href="https://github.com/Indranilsaha84/Indranilsaha84.github.io.git" target="_blank" rel="noopener noreferrer">
+            <li><a href="https://github.com/Indranilsaha84/Indranilsaha84.github.io.git" target="_blank"
+                    rel="noopener noreferrer">
                     GitHub Profile
                     <span class="link-description">Explore my coding projects and contributions on GitHub.</span>
                 </a></li>
+            <li><a href="https://Indranilsaha84.github.io/document.html" target="_blank" rel="noopener noreferrer">
+                    Document Reader (Private)
+                    <span class="link-description">A private tool for OCR, document comparison, and proofreading,
+                        powered by Google Gemini.</span>
+                </a>
+            </li>
         </ul>
         <div class="bug-report-bar">
             If you find a bug or have a suggestion regarding this website, please send an email to:
@@ -688,7 +728,7 @@
                 },
                 {
                     keywords: ['project', 'work', 'what can you do'],
-                    response: "I can tell you about any of this website's projects. For example, you can ask about the 'Snake Game', the 'clocks', the 'calculator', or the 'feedback' page."
+                    response: "I can tell you about any of this website's projects. For example, you can ask about the 'Document Reader', 'Snake Game', the 'clocks', or the 'calculator'."
                 },
                 {
                     keywords: ['snake'],
@@ -727,6 +767,10 @@
                     response: "There are links to download Adobe Photoshop, Lightroom, Illustrator, InDesign, and After Effects from Softzar. They are powerful tools for photo editing, graphic design, vector illustration, page layout, and motion graphics."
                 },
                 {
+                    keywords: ['document reader', 'doc reader', 'ocr', 'bcas'],
+                    response: "The Document Reader is a private, powerful tool for Baroda Computer and Seals. It uses AI to perform OCR on documents, compare two texts for differences, and proofread content. It's built with React and powered by the Google Gemini API."
+                },
+                {
                     keywords: ['bye', 'goodbye', 'see ya'],
                     response: "Goodbye! Thanks for chatting. Have a great day exploring the projects."
                 },
@@ -752,6 +796,40 @@
             // Default fallback response
             return "I'm not quite sure how to answer that. I'm still learning! You can try asking me about 'projects', the 'snake game', or 'who made this website' pls help me by getting feedback how can i improve my sealf?.";
         }
+
+        // --- Search Filter Logic ---
+        const searchInput = document.getElementById('searchInput');
+        const listItems = document.querySelectorAll('.container ul li');
+        const projectsList = document.querySelector('.container ul');
+
+        // Create and insert a "no results" message for better UX
+        const noResultsMessage = document.createElement('p');
+        noResultsMessage.textContent = 'No projects found matching your search.';
+        noResultsMessage.style.color = '#fff';
+        noResultsMessage.style.textAlign = 'center';
+        noResultsMessage.style.padding = '20px';
+        noResultsMessage.style.display = 'none'; // Initially hidden
+        projectsList.after(noResultsMessage);
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            let itemsFound = false;
+
+            listItems.forEach(item => {
+                const link = item.querySelector('a');
+                const title = link.firstChild.nodeValue.trim().toLowerCase();
+                const description = item.querySelector('.link-description').textContent.toLowerCase();
+
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    itemsFound = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            noResultsMessage.style.display = itemsFound ? 'none' : 'block';
+        });
     </script>
 </body>
 
